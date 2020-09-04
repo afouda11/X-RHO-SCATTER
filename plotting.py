@@ -121,26 +121,12 @@ def plot_detector(data, row, col, name):
                 for i,vali in enumerate(data[k]):
                     for j,valj in enumerate(data[k][vali]):
                 
-                        if k == "atom1":
-
-                                    
-                            Z = (data[k][vali][valj]).reshape(100,100) * (np.cos(-X[::-1]) ** 3)
-                            for l in range(100):
-                                for m in range(100):
-                                    if Z[l,m] < 1:
-                                        Z[l,m] = 1
-                            # print(Z.min())
-                            cf = ax[i,j].contourf(-X[::-1], -Y[::-1], np.absolute(Z), levels=levels, cmap=cmap,
-                                      locator=ticker.LogLocator(),
-                                        norm=colors.LogNorm(vmin=1, vmax=2000))
-
-                        else:
-                            Z = (data[k][vali][valj] * (np.cos(x) ** 3)).reshape(100,100)
-                            for l in range(100):
-                                for m in range(100):
-                                    if Z[l,m] < 1:
-                                        Z[l,m] = 1
-                            cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=cmap,
+                        Z = (data[k][vali][valj] * (np.cos(x) ** 3)).reshape(100,100)
+                        for l in range(100):
+                            for m in range(100):
+                                if Z[l,m] < 1:
+                                    Z[l,m] = 1
+                        cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=cmap,
                                       locator=ticker.LogLocator(),
                                         norm=colors.LogNorm(vmin=1, vmax=2000))
 
@@ -240,11 +226,9 @@ for k in method_list:
     for i in E_list:
        data[k][i] = {}
        for j in state_list:
-           if k == "atom":
-               data[k][i][j] = datread(str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt",2)
-           else:
-               data[k][i][j] = datread('dirac_data/'+str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt",2)
-         
+
+           data[k][i][j] = datread(str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt",2)
+
 # #### Normalise HF data
 
 for k in method_list1:
@@ -279,7 +263,7 @@ for i in E_list:
         
 
 # plot(data, 3, 4, "data")
-# plot_detector(data, 3, 4, "data_log")
+plot_detector(data, 3, 4, "data_log")
 
 # plot(state_diff, 3, 3, "state_diff_log")
 # plot_detector(state_diff, 3, 3, "state_diff")

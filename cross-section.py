@@ -65,7 +65,7 @@ def thomson(a, Theta, Phi):
 
 def crosssection(w, params):
     numproc = 1
-    slice_length = 1e2
+    slice_length = 1e3
     ndim = 3
     fdim = 2
     xmin = np.array([-9.00,-9.00,-9.00],dtype=float)
@@ -87,18 +87,6 @@ def crosssection(w, params):
     dsigma = Fsq * thomson(a, Theta, Phi)
 
     return dsigma
-
-# def run(name):
-    
-   
-#     start_time = time.time()
-#     DifScat = 
-#     elapsed_time = time.time() - start_time                  
-#     print(elapsed_time)
-
-#     data[name] = DifScat
-    
-#     return data[name]
     
 Theta  = np.linspace(0, (80 * np.pi/180), 5)
 Phi = np.linspace(0, (2 * np.pi), 5)

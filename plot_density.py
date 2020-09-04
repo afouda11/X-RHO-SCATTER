@@ -103,14 +103,14 @@ densb = core.rho_compute(qcb,
 
 densdftcore = densa + densb
 
-output.cube_creator(densdftcore, "DFT-core.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
+output.cube_creator(densdftcore, "cube_files/DFT-core.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
 
 hfdiff = denshfground - denshfcore
 
 dftdiff = densdftground - densdftcore
 
-output.cube_creator(hfdiff, "HF-Diff.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
-output.cube_creator(dftdiff, "DFT-Diff.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
+output.cube_creator(hfdiff, "cube_files/HF-Diff.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
+output.cube_creator(dftdiff, "cube_files/DFT-Diff.cb", qca.geo_info, qca.geo_spec, comments='', labels=None)
 
 
 
