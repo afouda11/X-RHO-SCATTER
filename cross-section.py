@@ -30,19 +30,21 @@ def func(x_array,*args):
     grid.x = np.array(x_array[:,0],copy=True)
     grid.y = np.array(x_array[:,1],copy=True)
     grid.z = np.array(x_array[:,2],copy=True)
-
+    
     densa = core.rho_compute(qca, 
                             slice_length=args[2],
                             drv=None,
                             laplacian=False,
                             numproc=args[1])
+
     
     densb = core.rho_compute(qcb, 
                             slice_length=args[2],
                             drv=None,
                             laplacian=False,
                             numproc=args[1])
-    
+       
+        
     dens = (densa + densb)
     
     rvec = np.array([   x_array[:,0],    x_array[:,1],     x_array[:,2]])
@@ -57,11 +59,13 @@ def func(x_array,*args):
 
     return out
 
-def thomson(a, Theta, Phi):
+def thomson(a, Theta, Phi, e_class):
      
-    # return (a ** 4) * ( ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2) )
-    return ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2)
-
+    if e_class == True:
+        return ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2)
+    if e_class == False:
+        return (a ** 4) * ( ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2) )
+    
 
 def crosssection(w, params):
     numproc = 1
@@ -70,13 +74,13 @@ def crosssection(w, params):
     fdim = 2
     xmin = np.array([-9.00,-9.00,-9.00],dtype=float)
     xmax = np.array([9.00,9.00,9.00],dtype=float)
-    abserr = 1e-2
-    relerr = 1e-2
+    abserr = 1e-4
+    relerr = 1e-4
     a    = 1/137
     kin = a * w
     Theta = params[0]
     Phi   = params[1]
-
+    e_class = True
     Q = Qvector(kin, Theta, Phi)
     F,error_F = cubature(func, ndim, fdim, xmin, xmax,
                                 args=[Q, numproc, slice_length],
@@ -84,18 +88,19 @@ def crosssection(w, params):
                                 norm=0, maxEval=0, vectorized=True)
     Fcomp = F[0] + 1j * F[1]
     Fsq = np.real(np.absolute(Fcomp) ** 2)
-    dsigma = Fsq * thomson(a, Theta, Phi)
+    dsigma = Fsq * thomson(a, Theta, Phi, e_class)
 
     return dsigma
     
-Theta  = np.linspace(0, (80 * np.pi/180), 5)
-Phi = np.linspace(0, (2 * np.pi), 5)
+Theta  = np.linspace(0, (80 * np.pi/180), 2)
+Phi = np.linspace(0, (2 * np.pi), 2)
 paramlist = list(itertools.product(Theta,Phi))
 pool = multiprocessing.Pool(16)
 
 e_dict      = {"5":5600, "9":9000, "24":24000}
 state_list  = ["Neutral", "C5", "C4", "C3"]
 method_list = ["HF", "DFT", "DFTopt"]
+
 
 data   = {}
 

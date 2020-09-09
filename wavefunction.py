@@ -23,7 +23,7 @@ symmetry C1
 noreorient
 nocom
 """)
-psi4.set_options({'basis':        '6-311+G*',
+psi4.set_options({'basis':        'cc-pCVQZ',
                   'scf_type':     'df',
                   'reference':    'uhf',
                   'mp2_type':     'conv',
@@ -43,7 +43,7 @@ options = {
     "DIIS_MODE": "ADIIS+CDIIS",
     "MIXMODE"  : "DAMP",
     "LOC_SUB"  : [0, 1, 2, 3, 4, 5]}
-psi4.set_num_threads(8)
+psi4.set_num_threads(16)
 orbs   = [3]
 occs   = [0.0]
 freeze = ["T"]
@@ -261,7 +261,8 @@ for i in range(nbf):
 Da     = Cocca.np @ Cocca.np.T
 Db     = Coccb.np @ Coccb.np.T
 
-jk = psi4.core.JK.build(wfn.basisset(),aux,jk_type=psi4.core.get_local_option("SCF","SCF_TYPE"))
+#jk = psi4.core.JK.build(wfn.basisset(),aux,jk_type=psi4.core.get_local_option("SCF","SCF_TYPE"))
+jk = psi4.core.JK.build(wfn.basisset())
 glob_mem = psi4.core.get_memory()/8
 jk.set_memory(int(glob_mem*0.6))
 if dft == "T":

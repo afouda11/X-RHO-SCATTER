@@ -12,19 +12,6 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib import ticker
-N =100
-def rotateMatrix(mat): 
-      
-    # Simply print from 
-    # last cell to first cell. 
-    i = N - 1;  
-    while(i >= 0): 
-        j = N - 1; 
-        while(j >= 0): 
-            print(mat[i][j], end = " "); 
-            j = j - 1; 
-        print(); 
-        i = i - 1; 
 
 def plot(data, row, col, name):
     
@@ -159,39 +146,43 @@ def plot_detector(data, row, col, name):
             
            f,ax = plt.subplots(row, col, sharey=True, sharex=True, figsize=(12,8))
                                
-               
-            
+                          
            for i,vali in enumerate(data[k]):
                for j,valj in enumerate(data[k][vali]):
                                                               
-                    if k == "HF-atom1": 
-                        Z = (data[k][vali][valj]).reshape(100,100) * (np.cos(-X[::-1]) ** 3)
-   
-                        
-                        cf = ax[i,j].contourf(-X[::-1], -Y[::-1], Z, levels=levels, cmap=cmap,
-                                      vmin=Z.min(), vmax=Z.max())
-               
-                    if k == "DFT-atom1":
-                       Z = (data[k][vali][valj]).reshape(100,100) * (np.cos(-X[::-1]) ** 3)
-                       cf = ax[i,j].contourf(-X[::-1], -Y[::-1], Z, levels=levels, cmap=cmap,
+
+                    Z = (data[k][vali][valj] * (np.cos(x) ** 3)).reshape(100,100)
+                    
+                    if row == 1 and col == 1:
+                        cf = ax.contourf(X, Y, Z, levels=levels, cmap=cmap,
                                          vmin=Z.min(), vmax=Z.max())
                     else:
-                       Z = (data[k][vali][valj] * (np.cos(x) ** 3)).reshape(100,100)
-                       cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=cmap,
-                                         vmin=vmin[count], vmax=vmax[count])
-                    
-                    ax[i,j].set_xlim(-1, 1)
-                    ax[i,j].set_ylim(-1, 1)
+                        cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=cmap,
+                                          vmin=vmin[count], vmax=vmax[count])
+                                      
+                    if row == 1 and col == 1:
+                        ax.set_xlim(-1, 1)
+                        ax.set_ylim(-1, 1)
+                    else:
+                        ax[i,j].set_xlim(-1, 1)
+                        ax[i,j].set_ylim(-1, 1)
                     
            cbar_ax = f.add_axes([0.91, 0.17, 0.015, 0.65])
            f.colorbar(cf,cax=cbar_ax)
             
            for i in range(row):
-                ax[i,0].set_ylabel('y/z', fontsize=15)
+               if row == 1 and col == 1:
+                   ax.set_ylabel('y/z', fontsize=15)
+            
+               
+                   ax[i,0].set_ylabel('y/z', fontsize=15)
         
            for i in range(col):
-                ax[row-1,i].set_xlabel('x/z', fontsize=15)
-
+               if row == 1 and col == 1:
+                   ax.set_xlabel('x/z', fontsize=15)
+               else:
+                   ax[row-1,i].set_xlabel('x/z', fontsize=15)
+               
            plt.subplots_adjust(wspace=0.085, hspace=0.1)
     
            f.savefig("plots_detector/"+str(name)+"_"+str(k)+".png",dpi=300)
@@ -210,9 +201,17 @@ state_list1 = ["C5", "C4", "C3"]
 method_list = ["atom", "HF", "DFT", "DFTopt"]
 method_list1 = ["HF", "DFT", "DFTopt"]
 
+## quality assement###
+# method_list2 = ["atom", "HF", "HFfine", "HFfineQVZ", "DFT", "DFTfine"]
+# method_list3 = ["HF", "HFfine", "HFfineQVZ", "DFT", "DFTfine"]
+# state_list2  = ["C5"]
+# E_list1      = ["5"]
+
 data        = {}
 state_diff  = {}
 method_diff = {"HF-atom":{}, "DFT-atom":{}, "DFT-HF":{}, "DFT-DFTopt":{}}
+# method_diff1 = {"HF-atom":{}, "HFfine-atom":{}, "HFfineQVZ-atom":{}, "DFT-atom":{}, "DFTfine-atom":{},  "DFT-HF":{}, "DFTfine-HFfine":{}}
+
 
 xydata = np.loadtxt('xy.txt')
 deg = 57.2958
@@ -229,16 +228,16 @@ for k in method_list:
 
            data[k][i][j] = datread(str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt",2)
 
-# #### Normalise HF data
+# #### Normalise HF and DFT data
 
 for k in method_list1:
     for i in E_list:
-         data[k][i]["Neutral"] = (data[k][i]["Neutral"] / data[k][i]["Neutral"].max()) * 1936
-        
-for k in method_list1:
-    for i in E_list:
         for j in state_list1:
-                 data[k][i][j]  = (data[k][i][j] / data[k][i][j].max()) * 1849
+            if j == "Neutra;l":
+                data[k][i][j] = (data[k][i][j] / data[k][i][j].max()) * 1936
+            else:
+                data[k][i][j]  = (data[k][i][j] / data[k][i][j].max()) * 1849
+
 #Neutral - SCH
 
 for k in method_list:
@@ -248,26 +247,41 @@ for k in method_list:
         for j in state_list1:
             state_diff[k][i][j] = data[k][i]["Neutral"] - data[k][i][j]
     
-#Method - Method
+# Method - Method
 
 for i in E_list:
-     method_diff["HF-atom"][i]    = {}
-     method_diff["DFT-atom"][i]   = {} 
-     method_diff["DFT-HF"][i]     = {} 
-     method_diff["DFT-DFTopt"][i] = {} 
-     for j in state_list:
+      method_diff["HF-atom"][i]    = {}
+      method_diff["DFT-atom"][i]   = {} 
+      method_diff["DFT-HF"][i]     = {} 
+      method_diff["DFT-DFTopt"][i] = {} 
+      for j in state_list:
         method_diff["HF-atom"][i][j]    = data["HF"][i][j]  - data["atom"][i][j]
         method_diff["DFT-atom"][i][j]   = data["DFT"][i][j] - data["atom"][i][j]
         method_diff["DFT-HF"][i][j]     = data["DFT"][i][j] - data["HF"][i][j]
         method_diff["DFT-DFTopt"][i][j] = data["DFT"][i][j] - data["DFTopt"][i][j]
+      
+plot_detector(data, 3, 4, "data_log")
+plot_detector(method_diff, 3, 4, "method_diff")
+
+# for i in E_list1:
+#     method_diff1["HF-atom"][i]        = {}
+#     method_diff1["HFfine-atom"][i]    = {} 
+#     method_diff1["HFfineQVZ-atom"][i] = {} 
+#     method_diff1["DFT-atom"][i]       = {}
+#     method_diff1["DFTfine-atom"][i]       = {}
+#     method_diff1["DFT-HF"][i]     = {} 
+#     method_diff1["DFTfine-HFfine"][i]     = {} 
+    
+#     for j in state_list2:
+    
+#         method_diff1["HF-atom"][i][j]     = data["HF"][i][j]  - data["atom"][i][j]
+#         method_diff1["HFfine-atom"][i][j] = data["HFfine"][i][j]  - data["atom"][i][j]
+#         method_diff1["HFfineQVZ-atom"][i][j] = data["HFfineQVZ"][i][j]  - data["atom"][i][j]
+#         method_diff1["DFT-atom"][i][j] = data["DFT"][i][j]  - data["atom"][i][j]
+#         method_diff1["DFTfine-atom"][i][j] = data["DFTfine"][i][j]  - data["atom"][i][j]
+#         method_diff1["DFT-HF"][i][j] = data["DFT"][i][j]  - data["HF"][i][j]
+#         method_diff1["DFTfine-HFfine"][i][j] = data["DFTfine"][i][j]  - data["HFfine"][i][j]
         
 
-# plot(data, 3, 4, "data")
-plot_detector(data, 3, 4, "data_log")
 
-# plot(state_diff, 3, 3, "state_diff_log")
-# plot_detector(state_diff, 3, 3, "state_diff")
-
-# plot(method_diff, 3, 4, "method_diff")
-plot_detector(method_diff, 3, 4, "method_diff")
 
