@@ -14,6 +14,47 @@ import itertools
 import multiprocessing
 from functools import partial
 
+
+class crosssection:
+    def __init__(self,Theta, Phi, e_dict, state_list, method_list, nprocs):
+        self.Theta       = Theta
+        self.Phi         = Phi
+        self.state_list  = state_list
+        self.method_list = method_list
+        self.nprocs      = nprocs
+
+
+    def Coherent_Elastic(self):
+
+        data   = {}
+
+        options.quiet  = True
+        options.no_log = True
+        paramlist = list(itertools.product(self.Theta,self.Phi))
+        array = np.asarray(paramlist)
+
+        for k in self.method_list:
+            data[k] = {}
+            for i,val in self.e_dict.items():
+                data[k][i] = {}
+                for j in self.state_list:
+           
+                    w   = val / 27.2114
+                    qca = read.main_read('molden_files/'+str(j)+'_'+str(k)+'.molden',itype='molden',all_mo=False,spin='alpha')
+                    qcb = read.main_read('molden_files/'+str(j)+'_'+str(k)+'.molden',itype='molden',all_mo=False,spin='beta')
+                
+                    grid.is_initialized = True
+           
+                    pool = multiprocessing.Pool(self.nprocs)
+                    start_time = time.time()
+                    funcpool = partial(Mol_Form_Factor, w, qca, qcb)
+                    data[k][i][j] = pool.map(funcpool,paramlist)
+           
+                    elapsed_time = time.time() - start_time                  
+                    print(elapsed_time)
+           
+                    np.savetxt(str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt", np.column_stack((array[:,0],array[:,1],data[k][i][j])))
+
 def dot(x, y):
     return sum(x_i*y_i for x_i, y_i in zip(x, y))
 
@@ -31,14 +72,14 @@ def func(x_array,*args):
     grid.y = np.array(x_array[:,1],copy=True)
     grid.z = np.array(x_array[:,2],copy=True)
     
-    densa = core.rho_compute(qca, 
+    densa = core.rho_compute(args[3], 
                             slice_length=args[2],
                             drv=None,
                             laplacian=False,
                             numproc=args[1])
 
     
-    densb = core.rho_compute(qcb, 
+    densb = core.rho_compute(args[4], 
                             slice_length=args[2],
                             drv=None,
                             laplacian=False,
@@ -59,7 +100,7 @@ def func(x_array,*args):
 
     return out
 
-def thomson(a, Theta, Phi, e_class):
+def Thomson(a, Theta, Phi, e_class):
      
     if e_class == True:
         return ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2)
@@ -67,7 +108,7 @@ def thomson(a, Theta, Phi, e_class):
         return (a ** 4) * ( ((np.cos(Theta) ** 2)*(np.cos(Phi) ** 2)) + (np.sin(Phi) ** 2) )
     
 
-def crosssection(w, params):
+def Mol_Form_Factor(w, qca, qcb, params):
     numproc = 1
     slice_length = 1e3
     ndim = 3
@@ -83,54 +124,24 @@ def crosssection(w, params):
     e_class = True
     Q = Qvector(kin, Theta, Phi)
     F,error_F = cubature(func, ndim, fdim, xmin, xmax,
-                                args=[Q, numproc, slice_length],
+                                args=[Q, numproc, slice_length, qca, qcb],
                                 adaptive='h', abserr=abserr, relerr=relerr,
                                 norm=0, maxEval=0, vectorized=True)
     Fcomp = F[0] + 1j * F[1]
     Fsq = np.real(np.absolute(Fcomp) ** 2)
-    dsigma = Fsq * thomson(a, Theta, Phi, e_class)
+    dsigma = Fsq * Thomson(a, Theta, Phi, e_class)
 
     return dsigma
     
-Theta  = np.linspace(0, (80 * np.pi/180), 2)
-Phi = np.linspace(0, (2 * np.pi), 2)
-paramlist = list(itertools.product(Theta,Phi))
-pool = multiprocessing.Pool(16)
-
-e_dict      = {"5":5600, "9":9000, "24":24000}
-state_list  = ["Neutral", "C5", "C4", "C3"]
-method_list = ["HF", "DFT", "DFTopt"]
-
-
-data   = {}
-
-options.quiet  = True
-options.no_log = True
-
-######## RUN ##############
-paramlist = list(itertools.product(Theta,Phi))
-array = np.asarray(paramlist)
-for k in method_list:
-    data[k] = {}
-    for i,val in e_dict.items():
-       data[k][i] = {}
-       for j in state_list:
-           
-           w   = val / 27.2114
-           qca = read.main_read('molden_files/'+str(j)+'_'+str(k)+'.molden',itype='molden',all_mo=False,spin='alpha')
-           qcb = read.main_read('molden_files/'+str(j)+'_'+str(k)+'.molden',itype='molden',all_mo=False,spin='beta')
-           
-           grid.is_initialized = True
-           
-           pool = multiprocessing.Pool(16)
-           start_time = time.time()
-           funcpool = partial(crosssection, w)
-           data[k][i][j] = pool.map(funcpool,paramlist)
-           
-           elapsed_time = time.time() - start_time                  
-           print(elapsed_time)
-           
-           np.savetxt(str(k)+'_data/'+str(j)+"_"+str(k)+"_"+str(i)+"Kev.txt", np.column_stack((array[:,0],array[:,1],data[k][i][j])))
 
 
 
+# Theta  = np.linspace(0, (80 * np.pi/180), 2)
+# Phi = np.linspace(0, (2 * np.pi), 2)
+
+# nprocs = 16
+# e_dict      = {"5":5600, "9":9000, "24":24000}
+# state_list  = ["Neutral", "C5", "C4", "C3"]
+# method_list = ["HF", "DFT", "DFTopt"]
+
+# Coherent_Elastic(Theta, Phi, e_dict, state_list, method_list, nprocs)

@@ -23,7 +23,8 @@ symmetry C1
 noreorient
 nocom
 """)
-psi4.set_options({'basis':        'cc-pCVQZ',
+
+psi4.set_options({'basis':        '6-311+G*',
                   'scf_type':     'df',
                   'reference':    'uhf',
                   'mp2_type':     'conv',
@@ -44,12 +45,13 @@ options = {
     "MIXMODE"  : "DAMP",
     "LOC_SUB"  : [0, 1, 2, 3, 4, 5]}
 psi4.set_num_threads(16)
+mode   = "GS+LOC+EX"
 orbs   = [3]
 occs   = [0.0]
 freeze = ["T"]
 spin   = ["b"] 
 ovl    = ["T"]
-dft    = "F"
+dft    = "T"
 func   = 'b3lyp'
 # Get the SCF wavefunction & energies
 if dft == "F":
@@ -608,10 +610,4 @@ if dft == "T":
     uhf.occupation_b().np[:] = occb
     mw = psi4.core.MoldenWriter(uhf)
     mw.write('dft_core_hole.molden',uhf.Ca(),uhf.Cb(),uhf.epsilon_a(),uhf.epsilon_b(),OCCA,OCCB,True)
-
-
-
-
-
-
 
