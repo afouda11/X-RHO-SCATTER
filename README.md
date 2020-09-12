@@ -2,8 +2,7 @@
 
 Calculates coherent elastic x-ray scattering from either Hartree-Fock or DFT.\
 The code is still in developemnt and currently serves the single purpose of producing coherent scattering\
-for 1-3-cyclohexadiene, the results of which will be in our Farady Discussion paper\cite{} \
-
+for 1-3-cyclohexadiene, the results of which will be in our Farady Discussion paper\
 Further developments and instructions for installation/use coming soon...
 
 This code uses psi4numpy, orbkit and curbature. \
