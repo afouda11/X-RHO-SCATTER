@@ -1,3 +1,12 @@
+
+"""
+
+This code is a modified version of the psixas ksex.py code that also gives the option to do HF as well as DFT
+https://github.com/Masterluke87/psixas
+
+"""
+
+
 import psi4
 import numpy as np
 from kshelper import diag_H,Timer, ACDIIS,printHeader

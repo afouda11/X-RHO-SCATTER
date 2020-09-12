@@ -3,6 +3,9 @@
 Created on Sun Aug 19 18:30:11 2018
 
 @author: luke
+
+This code was directly taken from the PSIXAS code and has not been modified
+https://github.com/Masterluke87/psixas
 """
 
 import numpy as np
