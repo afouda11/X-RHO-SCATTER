@@ -8,7 +8,7 @@ Further developments and instructions for installation/use coming soon...
 This code uses psi4numpy, orbkit and curbature. \
 https://github.com/psi4/psi4numpy \
 https://github.com/orbkit/orbkit \
-https://github.com/saullocastro/cubature \
+https://github.com/saullocastro/cubature
 
 wavefunction.py is an adaption of PSIXAS\
 kshelper.py is an exact copy of the kshelper.py in PSIXAS\
