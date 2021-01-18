@@ -3,7 +3,7 @@
 ----- X-RHO-SCATTER -----
 
 Calculates coherent elastic x-ray scattering on core-hole states from either Hartree-Fock or DFT.\
-The code is still in developemnt and currently serves the single purpose of producing coherent scattering\
+The code is still in developemnt and currently serves the single purpose of producing coherent x-ray scattering\
 for the 1-3-cyclohexadiene core-hole cation states, the results of which will be in our Farady Discussion paper\
 Further developments and instructions for installation/use coming soon...
 
