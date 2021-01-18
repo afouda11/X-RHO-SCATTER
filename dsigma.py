@@ -4,6 +4,7 @@
 Created on Tue Aug 11 11:34:07 2020
 
 @author: afouda
+
 """
 import os
 import time
@@ -29,11 +30,16 @@ class crosssection:
 #Public        
     def Coherent_Elastic(self):
 
+        #main driving function called in the run_dsigma.py script
+        #this runs all the other function in this class
+
         data   = {}
 
         options.quiet  = True
         options.no_log = True
-        
+       
+        #this is a list of all the angles of the scattering grid, used in the 
+        #used to parrelize via mapping funcpool (calculating the molecualr form factor etc. 
         paramlist = list(itertools.product(self.Theta,self.Phi))
         array = np.asarray(paramlist)
        
@@ -65,12 +71,16 @@ class crosssection:
 #Private
 
 def Mol_Form_Factor(w, qca, qcb, precision, extent, params):
-    numproc = 1
+    #calulcate the differential scattering cross section
+    #multiply Mol form factor square by the Thhomson differential sctatering cross section
+    #the equations can be seen in the farady discussion paper
+
+    numproc = 1 #parrelize over the cross section calc not the density intergation, its faster this way.
     slice_length = 1e3
-    ndim = 3
-    fdim = 2
+    ndim = 3    #input dimension for curbature, cartisian grid
+    fdim = 2    #output complex number
     xmin = np.array([-1 * extent,-1 * extent,-1 *extent],dtype=float)
-    xmax = np.array([extent,extent,extent],dtype=float)
+    xmax = np.array([extent,extent,extent],dtype=float)         
     abserr = precision
     relerr = precision 
     a    = 1/137
@@ -78,7 +88,7 @@ def Mol_Form_Factor(w, qca, qcb, precision, extent, params):
     Theta = params[0]
     Phi   = params[1]
     e_class = True
-    Q = Qvector(kin, Theta, Phi)
+    Q = Qvector(kin, Theta, Phi) #momentum transfer vector
     F,error_F = cubature(func, ndim, fdim, xmin, xmax,
                                 args=[Q, numproc, slice_length, qca, qcb],
                                 adaptive='h', abserr=abserr, relerr=relerr,
@@ -90,12 +100,15 @@ def Mol_Form_Factor(w, qca, qcb, precision, extent, params):
     return dsigma
 
 def func(x_array,*args):
-    
+
+    #the function to intergate to produce the molecular form factor
+    #x_array is the cartesian coordinateas that orbkit uses to define a grid on
     x_array = x_array.reshape((-1,3))
     grid.x = np.array(x_array[:,0],copy=True)
     grid.y = np.array(x_array[:,1],copy=True)
     grid.z = np.array(x_array[:,2],copy=True)
-    
+
+    #alpha and beta electron density caclulated by orbkit on the grid
     densa = core.rho_compute(args[3], 
                             slice_length=args[2],
                             drv=None,
@@ -144,4 +157,4 @@ def dot(x, y):
    
 
 
-    
+    §

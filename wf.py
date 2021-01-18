@@ -1,7 +1,11 @@
 """
 
-This code is a modified version of the psixas ksex.py code that also gives the option to do HF as well as DFT
-https://github.com/Masterluke87/psixas
+This code is a modified version of the psixas ksex.py 
+here the code also gives the option to do HF as well as DFT
+but currently  lacks the ability to independantly select whether
+GS, LOC or EX calcs are done, run_wf.py just does all three sequantially
+
+OG code >> https://github.com/Masterluke87/psixas
 
 """
 
@@ -11,13 +15,7 @@ from kshelper import diag_H,Timer, ACDIIS,printHeader
 import time
 
 
-def ground_state(basis, dft=False, func=None):
-    
-    psi4.set_options({'scf_type':      'df',
-                      'reference':     'uhf',
-                      'e_convergence': 1e-8,
-                      'd_convergence': 1e-8,
-                  })
+def ground_state(dft=False, func=None):
 
     # Get the SCF wavefunction & energies
     global gsE
@@ -52,18 +50,17 @@ def ground_state(basis, dft=False, func=None):
     mw = psi4.core.MoldenWriter(wfn)
 
     if dft == False:
-        mw.write('Neutral_HF.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
-        np.savez('hf_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb,epsa=epsa,epsb=epsb)
+        mw.write('wf_outfiles/Neutral_HF.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
+        np.savez('wf_outfiles/hf_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb,epsa=epsa,epsb=epsb)
 
     if dft == True:
-        mw.write('Neutral_DFT.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
-        np.savez('dft_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb,epsa=epsa,epsb=epsb)
+        mw.write('wf_outfiles/Neutral_DFT.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
+        np.savez('wf_outfiles/dft_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb,epsa=epsa,epsb=epsb)
 
     return wfn 
 
 def localize(wfn, loc_sub, dft):
-    #loc_sub = np.array(options["LOC_SUB"],dtype=np.int)
-    #wfn     = psi4.core.Wavefunction.build(mol,psi4.core.get_global_option('BASIS'))
+
     nbf    = wfn.nso()
 
     if dft == True:
@@ -71,20 +68,20 @@ def localize(wfn, loc_sub, dft):
         sup.set_deriv(2)
         sup.allocate()
         uhf   = psi4.core.UHF(wfn,sup)
-        Ca = np.load("dft_gsorbs.npz")["Ca"]
-        Cb = np.load("dft_gsorbs.npz")["Cb"]
-        occa = np.load("dft_gsorbs.npz")["occa"]
-        occb = np.load("dft_gsorbs.npz")["occb"]
-        epsa = np.load("dft_gsorbs.npz")["epsa"]
-        epsb = np.load("dft_gsorbs.npz")["epsb"]
+        Ca = np.load("wf_outfiles/dft_gsorbs.npz")["Ca"]
+        Cb = np.load("wf_outfiles/dft_gsorbs.npz")["Cb"]
+        occa = np.load("wf_outfiles/dft_gsorbs.npz")["occa"]
+        occb = np.load("wf_outfiles/dft_gsorbs.npz")["occb"]
+        epsa = np.load("wf_outfiles/dft_gsorbs.npz")["epsa"]
+        epsb = np.load("wf_outfiles/dft_gsorbs.npz")["epsb"]
 
     if dft == False:
-        Ca = np.load("hf_gsorbs.npz")["Ca"]
-        Cb = np.load("hf_gsorbs.npz")["Cb"]
-        occa = np.load("hf_gsorbs.npz")["occa"]
-        occb = np.load("hf_gsorbs.npz")["occb"]
-        epsa = np.load("hf_gsorbs.npz")["epsa"]
-        epsb = np.load("hf_gsorbs.npz")["epsb"]
+        Ca = np.load("wf_outfiles/hf_gsorbs.npz")["Ca"]
+        Cb = np.load("wf_outfiles/hf_gsorbs.npz")["Cb"]
+        occa = np.load("wf_outfiles/hf_gsorbs.npz")["occa"]
+        occb = np.load("wf_outfiles/hf_gsorbs.npz")["occb"]
+        epsa = np.load("wf_outfiles/hf_gsorbs.npz")["epsa"]
+        epsb = np.load("wf_outfiles/hf_gsorbs.npz")["epsb"]
 
     locCa = psi4.core.Matrix(wfn.nso(),len(loc_sub))
     locCb = psi4.core.Matrix(wfn.nso(),len(loc_sub))
@@ -102,11 +99,11 @@ def localize(wfn, loc_sub, dft):
     Cb[:,loc_sub] = LocalB.L
 
     if dft == True:
-        np.savez('dft_loc_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb)
+        np.savez('wf_outfiles/dft_loc_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb)
         psi4.core.print_out("Localized Orbitals written\n")
 
     if dft == False:
-        np.savez('hf_loc_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb)
+        np.savez('wf_outfiles/hf_loc_gsorbs',Ca=Ca,Cb=Cb,occa=occa,occb=occb)
         psi4.core.print_out("Localized Orbitals written\n")
 
     OCCA = psi4.core.Vector(nbf)
@@ -126,7 +123,7 @@ def localize(wfn, loc_sub, dft):
         wfn.occupation_b().np[:] = occb
 
         mw = psi4.core.MoldenWriter(wfn)
-        mw.write('Neutral_HF_loc.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
+        mw.write('wf_outfiles/Neutral_HF_loc.molden',wfn.Ca(),wfn.Cb(),wfn.epsilon_a(),wfn.epsilon_b(),OCCA,OCCB,True)
 
     if dft == True:
         uhf.Ca().np[:] = Ca
@@ -139,10 +136,16 @@ def localize(wfn, loc_sub, dft):
         uhf.occupation_b().np[:] = occb
 
         mw = psi4.core.MoldenWriter(uhf)
-        mw.write('Neutral_DFT_loc.molden',uhf.Ca(),uhf.Cb(),uhf.epsilon_a(),uhf.epsilon_b(),OCCA,OCCB,True)
+        mw.write('wf_outfiles/Neutral_DFT_loc.molden',uhf.Ca(),uhf.Cb(),uhf.epsilon_a(),uhf.epsilon_b(),OCCA,OCCB,True)
 
-def non_aufbau_state(orbs, occs, freeze, spin, ovl, dft, func, mol, scf_wfn, **options):
+def non_aufbau_state(dft, func, mol, scf_wfn, **options):
     orbitals = []
+
+    orbs   = np.array(options["ORBS"],dtype=np.int)
+    occs   = np.array(options["OCCS"],dtype=np.float)
+    freeze = np.array(options["OCCS"],dtype=np.str)
+    spin   = np.array(options["SPIN"],dtype=np.str)
+    ovl    = np.array(options["OVL"],dtype=np.str)
 
     lens = [len(x) for x in [orbs,occs,freeze,spin,ovl]]
     if  len(list((set(lens))))>1:
@@ -151,12 +154,12 @@ def non_aufbau_state(orbs, occs, freeze, spin, ovl, dft, func, mol, scf_wfn, **o
         orbitals.append({"orb" : orbs[i],"spin": spin[i].lower(),"occ" : occs[i], "frz" : freeze[i]=="T","DoOvl":ovl[i] == "T" })
 
     if dft == True:
-        Ca = np.load("dft_loc_gsorbs.npz")["Ca"]
-        Cb = np.load("dft_loc_gsorbs.npz")["Cb"]
+        Ca = np.load("wf_outfiles/dft_loc_gsorbs.npz")["Ca"]
+        Cb = np.load("wf_outfiles/dft_loc_gsorbs.npz")["Cb"]
 
     if dft == False:
-        Ca = np.load("hf_loc_gsorbs.npz")["Ca"]
-        Cb = np.load("hf_loc_gsorbs.npz")["Cb"]
+        Ca = np.load("wf_outfiles/hf_loc_gsorbs.npz")["Ca"]
+        Cb = np.load("wf_outfiles/hf_loc_gsorbs.npz")["Cb"]
 
     for i in orbitals:
         if i["spin"]=="b":
@@ -568,7 +571,7 @@ def non_aufbau_state(orbs, occs, freeze, spin, ovl, dft, func, mol, scf_wfn, **o
         scf_wfn.occupation_a().np[:] = occa
         scf_wfn.occupation_b().np[:] = occb
         mw = psi4.core.MoldenWriter(scf_wfn)
-        mw.write('Core_Hole_HF.molden',scf_wfn.Ca(),scf_wfn.Cb(),scf_wfn.epsilon_a(),scf_wfn.epsilon_b(),OCCA,OCCB,True)
+        mw.write('wf_outfiles/Core_Hole_HF.molden',scf_wfn.Ca(),scf_wfn.Cb(),scf_wfn.epsilon_a(),scf_wfn.epsilon_b(),OCCA,OCCB,True)
     if dft == True:
         uhf.Ca().np[:] = Ca
         uhf.Cb().np[:] = Cb
@@ -577,6 +580,5 @@ def non_aufbau_state(orbs, occs, freeze, spin, ovl, dft, func, mol, scf_wfn, **o
         uhf.occupation_a().np[:] = occa
         uhf.occupation_b().np[:] = occb
         mw = psi4.core.MoldenWriter(uhf)
-        mw.write('Core_Hole_DFT.molden',uhf.Ca(),uhf.Cb(),uhf.epsilon_a(),uhf.epsilon_b(),OCCA,OCCB,True)
-
+        mw.write('wf_outfiles/Core_Hole_DFT.molden',uhf.Ca(),uhf.Cb(),uhf.epsilon_a(),uhf.epsilon_b(),OCCA,OCCB,True)
 
