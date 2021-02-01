@@ -3,7 +3,6 @@
 """
 Created on Fri Aug 21 10:44:29 2020
 The code that produces the plots in https://doi.org/10.1039/D0FD00106F
-This whole project is dire need of some generalization
 
 @author: afouda
 """
