@@ -69,7 +69,7 @@ class plot_detector:
                                 Z[l,m] = 1
                     cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=self.cmap,
                               locator=ticker.LogLocator(),
-                                norm=colors.LogNorm(vmin=1, vmax=2000))
+                                norm=colors.LogNorm(vmin=1, vmax=vmax))
 
                     ax[i,j].set_xlim(-1, 1)
                     ax[i,j].set_ylim(-1, 1)
@@ -119,10 +119,6 @@ class plot_detector:
         
         X = (np.tan(self.x)*np.cos(self.y)).reshape(100,100)
         Y = (np.tan(self.x)*np.sin(self.y)).reshape(100,100)
-    
-        #Here the color scale is set
-        vmin = [-1.0]
-        vmax = [2.5]
 
         levels = 100
         count = 0
@@ -135,7 +131,7 @@ class plot_detector:
                                                               
                     Z = (self.data[k][vali][valj] * (np.cos(self.x) ** 3)).reshape(100,100)
                     cf = ax[i,j].contourf(X, Y, Z, levels=levels, cmap=self.cmap,
-                                     vmin=vmin[count], vmax=vmax[count])
+                                     vmin=vmin, vmax=vmax)
                     
                     ax[i,j].set_xlim(-1, 1)
                     ax[i,j].set_ylim(-1, 1)

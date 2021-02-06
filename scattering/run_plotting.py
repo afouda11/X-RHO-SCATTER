@@ -40,13 +40,14 @@ if normalise == True:
 
 plotting.plot_detector(data, len(energy), len(state)).log_data()
 
+name = "DFT-HF"
 # Method[1] - Method[0]
 if method_diff == True:
-    method_diff = {"DFT-HF":{}}
+    method_diff = {name:{}}
     for i in energy:
-        method_diff["DFT-HF"][i]     = {} 
+        method_diff[name][i]     = {} 
         for j in state:
-            method_diff["DFT-HF"][i][j]     = data["DFT"][i][j] - data["HF"][i][j]
+            method_diff[name][i][j]     = data[method[1]][i][j] - data[method[0]][i][j]
 
     plotting.plot_detector(method_diff, len(energy), len(state)).method_diff()
         
