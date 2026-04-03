@@ -11,7 +11,6 @@ will do in due course.
 
 import plotting
 import numpy as np
-import matplotlib.pyplot as plt
 
 energy      = ["5", "9", "24"]
 state       = {"Neutral":44, "C3":43, "C4":43, "C5":43}# key = state label, item = number of electrons in state

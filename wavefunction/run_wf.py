@@ -60,8 +60,8 @@ func   = 'b3lyp'
 scf_wfn = wf.ground_state(dft, func)
 
 #get arrray or orbs to localize, generate loc_wf which overwrites scf_wf
-loc_sub = np.array(options["LOC_SUB"],dtype=np.int)
-wf.localize(scf_wfn, loc_sub, dft)
+loc_sub = np.array(options["LOC_SUB"],dtype=int)
+wf.localize(scf_wfn, loc_sub, dft, func)
 
 #create the core-hole or whatever occupation it is state
 wf.non_aufbau_state(dft, func, mol, scf_wfn, **options)

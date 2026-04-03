@@ -64,6 +64,8 @@ class crosssection:
                     start_time = time.time()
                     funcpool = partial(Mol_Form_Factor, w, qca, qcb, self.precision, self.extent)
                     data[k][i][j] = pool.map(funcpool,paramlist)
+                    pool.close()
+                    pool.join()
            
                     elapsed_time = time.time() - start_time                  
                     print(elapsed_time)
@@ -127,9 +129,10 @@ def func(x_array,*args):
     dens = (densa + densb)
     
     rvec = np.array([   x_array[:,0],    x_array[:,1],     x_array[:,2]])
+    #swap y/z and negate to match detector coordinate convention
     qvec = np.array([1 * args[0][0], 1 * args[0][2],   -1 * args[0][1]])
     
-    dotp = dot(qvec,rvec)
+    dotp = np.einsum('ij,ij->j',qvec,rvec)
     
     npt = x_array.shape[0]
     out = np.zeros((npt, 2))
@@ -151,9 +154,6 @@ def Qvector(kin, Theta, Phi):
                     np.sin(Theta / 2)])
     Q = (2 * np.absolute(kin) * np.sin(Theta / 2)) * vec
     return Q
-    
-def dot(x, y):
-    return sum(x_i*y_i for x_i, y_i in zip(x, y))
 
    
 

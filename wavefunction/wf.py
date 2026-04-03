@@ -28,8 +28,8 @@ def ground_state(dft=False, func=None):
     nbeta  = wfn.nbeta()
     nbf    = wfn.nso()
 
-    occa = np.zeros(nbf,dtype=np.float)
-    occb = np.zeros(nbf,dtype=np.float)
+    occa = np.zeros(nbf,dtype=float)
+    occb = np.zeros(nbf,dtype=float)
     occa[:nalpha] = 1.0
     occb[:nbeta] = 1.0
 
@@ -59,7 +59,7 @@ def ground_state(dft=False, func=None):
 
     return wfn 
 
-def localize(wfn, loc_sub, dft):
+def localize(wfn, loc_sub, dft, func=None):
 
     nbf    = wfn.nso()
 
@@ -141,11 +141,11 @@ def localize(wfn, loc_sub, dft):
 def non_aufbau_state(dft, func, mol, scf_wfn, **options):
     orbitals = []
 
-    orbs   = np.array(options["ORBS"],dtype=np.int)
-    occs   = np.array(options["OCCS"],dtype=np.float)
-    freeze = np.array(options["OCCS"],dtype=np.str)
-    spin   = np.array(options["SPIN"],dtype=np.str)
-    ovl    = np.array(options["OVL"],dtype=np.str)
+    orbs   = np.array(options["ORBS"],dtype=int)
+    occs   = np.array(options["OCCS"],dtype=float)
+    freeze = np.array(options["FREEZE"],dtype=str)
+    spin   = np.array(options["SPIN"],dtype=str)
+    ovl    = np.array(options["OVL"],dtype=str)
 
     lens = [len(x) for x in [orbs,occs,freeze,spin,ovl]]
     if  len(list((set(lens))))>1:
@@ -228,6 +228,14 @@ def non_aufbau_state(dft, func, mol, scf_wfn, **options):
             """
             i["ovl"] = np.max(overlap)
             occb[i["orb"]] = i["occ"]
+        elif i["spin"]=="a":
+            overlap = np.abs(np.einsum('m,nj,mn->j',i["C"],Cocca,S))
+            if i["orb"] != np.argmax(overlap):
+                print ("index changed from {:d} to {:d}".format(i["orb"],np.argmax(overlap)))
+                i["orb"] = np.argmax(overlap)
+
+            i["ovl"] = np.max(overlap)
+            occa[i["orb"]] = i["occ"]
     for i in range(nbf):
         Cocca.np[:,i] *= np.sqrt(occa[i])
         Coccb.np[:,i] *= np.sqrt(occb[i])
@@ -238,7 +246,7 @@ def non_aufbau_state(dft, func, mol, scf_wfn, **options):
     jk = psi4.core.JK.build(wfn.basisset())
     glob_mem = psi4.core.get_memory()/8
     jk.set_memory(int(glob_mem*0.6))
-    if dft == "T":
+    if dft == True:
         if (sup.is_x_hybrid()):
             jk.set_do_K(True)
         if (sup.is_x_lrc()):
@@ -393,6 +401,7 @@ def non_aufbau_state(dft, func, mol, scf_wfn, **options):
         diisb_e = np.ravel(A.T@(Fb@Db@S - S@Db@Fb)@A)
         diis.add(Fa,Fb,Da,Db,np.concatenate((diisa_e,diisb_e)))
 
+        myTimer.addStart("MIX")
         if ("DIIS" in options["MIXMODE"]) and (SCF_ITER>1):
             (Fa,Fb) = diis.extrapolate(DIISError)
             diis_counter += 1
