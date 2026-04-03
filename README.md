@@ -70,9 +70,9 @@ X-RHO-SCATTER/
 
 | Module | File | Role |
 |--------|------|------|
-| **Wavefunction** | `wf.py` | Three-step wavefunction pipeline: ground-state SCF -> Pipek-Mezey orbital localization -> non-aufbau SCF with MOM |
-| **SCF Helpers** | `kshelper.py` | Provides `diag_H` (Fock diagonalization), `Timer` (timing), `ACDIIS` (ADIIS+CDIIS extrapolation), `printHeader` (formatted output) |
-| **Scattering** | `dsigma.py` | `crosssection` class for computing dσ/dΩ: reads molden files via ORBKIT, computes electron density, numerically integrates the molecular form factor with cubature, applies Thomson cross-section |
+| **Wavefunction** | `wf.py` | Modified From PSIXAS: Three-step wavefunction pipeline: ground-state SCF -> Pipek-Mezey orbital localization -> non-aufbau SCF with MOM |
+| **SCF Helpers** | `kshelper.py` | From PSIXAS: Provides `diag_H` (Fock diagonalization), `Timer` (timing), `ACDIIS` (ADIIS+CDIIS extrapolation), `printHeader` (formatted output) |
+| **Scattering** | `dsigma.py` | `crosssection` class for computing differential cross section: reads molden files via ORBKIT, computes electron density, numerically integrates the molecular form factor with cubature, applies Thomson cross-section |
 | **Plotting** | `plotting.py` | `plot_detector` class: `log_data()` for log-scale detector images, `method_diff()` for method-comparison plots |
 
 ### Wavefunction Pipeline
